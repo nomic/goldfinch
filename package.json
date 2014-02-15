@@ -1,0 +1,30 @@
+{
+  "name": "goldfinch",
+  "version": "0.0.1",
+  "description": "promises",
+  "main": "index.js",
+  "directories": {
+    "test": "test"
+  },
+  "dependencies": {
+    "bluebird": "~1.0.4"
+  },
+  "devDependencies": {
+    "mocha": "~1.17.1"
+  },
+  "scripts": {
+    "test": "mocha"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/nomic/goldfinch.git"
+  },
+  "keywords": [
+    "promise"
+  ],
+  "author": "Nomic",
+  "bugs": {
+    "url": "https://github.com/nomic/goldfinch/issues"
+  },
+  "homepage": "https://github.com/nomic/goldfinch"
+}
