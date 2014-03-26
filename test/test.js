@@ -37,4 +37,25 @@ describe('Goldfinch', function () {
         });
     });
 
+    it('promisifyValues', function () {
+        var obj = Promise.promisifyValues({
+            good: function(value, cb) {
+                cb(null, value+1);
+            },
+            bad: function(value, cb) {
+                cb('oops');
+            }
+        });
+        obj.good(5).then(function(val) {
+            assert.equal(val, 6);
+        }, function(err) {
+            throw new Error('Unexpected error');
+        });
+        obj.bad(5).then(function(val) {
+            throw new Error('Expected error');
+        }, function(err) {
+            assert.equal(err.message, 'oops');
+        });
+    });
+
 });
