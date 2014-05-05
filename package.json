@@ -1,6 +1,6 @@
 {
   "name": "goldfinch",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "description": "promises",
   "main": "index.js",
   "directories": {

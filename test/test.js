@@ -6,7 +6,21 @@ describe('Goldfinch', function () {
         return Promise.resolve('a').tap(function (a) {
             return assert.equal(a, 'a');
         }).then(function (a) {
-            return assert.equal(a, 'a');
+            assert.equal(a, 'a');
+            throw new Error('catch me');
+        }).tap(function() {
+            assert.equal('This should', 'not happen');
+        }, function(err) {
+            assert.equal(err.message, 'catch me');
+        }).then(function() {
+            assert.equal('This should', 'not happen');
+        }, function(err) {
+            assert.equal(err.message, 'catch me');
+            throw new Error('catch me');
+        }).tap(function() {
+            assert.equal('This should', 'not happen');
+        }).then(null, function(err) {
+            return null;
         });
     });
 
