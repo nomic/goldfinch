@@ -42,10 +42,11 @@ Promise.promisifyValues = function Promise$_promisifyValues(obj) {
     });
 };
 
-/* not tested...
+
 Promise.ambidextrous = function(fn) {
   
-    // If the function takes a callback, we need to wrap it
+    // If the function takes a callback and is called without it
+    // then we need to wrap it
     var params = getParams(fn);
     var cb = _.last(params);
     var argCount = params.length;
@@ -53,16 +54,18 @@ Promise.ambidextrous = function(fn) {
     return function() {
         var args = Array.prototype.slice.call(arguments, 0);
 
-        // we need to wrap this function
-        if (cb && (cb === 'callback' || cb === 'cb') && argCount - 1 === args) {
-
-            Promise.promisify(fn).apply(null, args);
+        var doesTakeCallback = cb && (cb === 'callback' || cb === 'cb');
+        var isMissingArgument = argCount - 1 === args.length
+        
+        // The function takes a callback, but one was not passed in
+        if ( doesTakeCallback && isMissingArgument) {
+            return Promise.promisify(fn).apply(null, args);
         }
 
         // dont wrap the function
         return fn.apply(null, args);
     };
 };
-*/
+
 
 module.exports = Promise;

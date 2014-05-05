@@ -1,24 +1,25 @@
-var assert = require('assert');
+var chai = require('chai');
+var expect = chai.expect;
 var Promise = require('../index.js');
 
 describe('Goldfinch', function () {
     it('Taps', function () {
         return Promise.resolve('a').tap(function (a) {
-            return assert.equal(a, 'a');
+            return expect(a).to.equal('a');
         }).then(function (a) {
-            assert.equal(a, 'a');
+            expect(a).to.equal('a');
             throw new Error('catch me');
         }).tap(function() {
-            assert.equal('This should', 'not happen');
+            expect('This should').to.equal('not happen');
         }, function(err) {
-            assert.equal(err.message, 'catch me');
+            expect(err.message).to.equal('catch me');
         }).then(function() {
-            assert.equal('This should', 'not happen');
+            expect('This should').to.equal('not happen');
         }, function(err) {
-            assert.equal(err.message, 'catch me');
+            expect(err.message).to.equal('catch me');
             throw new Error('catch me');
         }).tap(function() {
-            assert.equal('This should', 'not happen');
+            expect('This should').to.equal('not happen');
         }).then(null, function(err) {
             return null;
         });
@@ -26,19 +27,19 @@ describe('Goldfinch', function () {
 
     it('fcalls', function () {
         return Promise.fcall(function (b) {
-            assert.equal(b, 'b');
+            expect(b).to.equal('b');
             return b;
         }, 'b').then(function(b) {
-            assert.equal(b, 'b');
+            expect(b).to.equal('b');
         });
     });
 
     it('nfcalls', function () {
         return Promise.nfcall(function (a, cb) {
-            assert.equal(a, 'a');
+            expect(a).to.equal('a');
             cb(null, a);
         }, 'a').then(function (a) {
-            assert.equal(a, 'a');
+            expect(a).to.equal('a');
         });
     });
 
@@ -48,7 +49,7 @@ describe('Goldfinch', function () {
         }).then(function (nul) {
             throw new Error('Expected error');
         }, function (err) {
-            assert.equal(err.message, 'expected');
+            expect(err.message).to.equal('expected');
         });
     });
 
@@ -63,17 +64,54 @@ describe('Goldfinch', function () {
         });
 
         return obj.good(5).then(function(val) {
-            assert.equal(val, 6);
+            expect(val).to.equal(6);
         }, function(err) {
             throw new Error('Unexpected error');
         }).then(function() {
             return obj.bad(5).then(function(val) {
                 throw new Error('Expected error');
             }, function(err) {
-                assert.equal(err.message, 'oops');
+                expect(err.message).to.equal('oops');
             });
         });
 
+    });
+    
+    it('ambidextrousifies functions', function() {
+        
+        function nodeFunction(a, b, c, callback) {
+            callback(null, a + b +c);
+        }
+        
+        function nodeFunctionCb(a, b, cb) {
+            cb(null, a + b);
+        }
+        
+        function regularFn(a, b, c) {
+            return a + b + c;
+        }
+        
+        expect(Promise.ambidextrous(regularFn)('a', 'b', 'c')).to.equal('abc');
+        
+        Promise.ambidextrous(nodeFunction)('a', 'b', 'c', function(err, abc) {
+            expect(err).to.equal(null);
+            expect(abc).to.equal('abc');
+            return Promise.ambidextrous(nodeFunction)('a', 'b', 'c').then(function(abc) {
+                expect(abc).to.equal('abc');
+            }).then(function() {
+                return Promise.ambidextrous(nodeFunctionCb)('a', 'b', function(err, abc) {
+                    expect(err).to.equal(null);
+                    expect(abc).to.equal('ab');
+                    
+                    return Promise.ambidextrous(nodeFunctionCb)('a', 'b').then(function(abc) {
+                        expect(abc).to.equal('ab');
+                    });
+                
+                });
+            });
+        });
+        
+        
     });
 
 });
