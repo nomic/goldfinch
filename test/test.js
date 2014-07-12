@@ -1,9 +1,12 @@
+'use strict';
+
 var chai = require('chai');
 var expect = chai.expect;
 var Promise = require('../index.js');
+var _ = require('lodash');
 
 describe('Goldfinch', function () {
-    it('Taps', function () {
+    it('taps', function () {
         return Promise.resolve('a').tap(function (a) {
             return expect(a).to.equal('a');
         }).then(function (a) {
@@ -20,9 +23,7 @@ describe('Goldfinch', function () {
             throw new Error('catch me');
         }).tap(function() {
             expect('This should').to.equal('not happen');
-        }).then(null, function(err) {
-            return null;
-        });
+        }).then(null, _.noop);
     });
 
     it('fcalls', function () {
@@ -46,7 +47,7 @@ describe('Goldfinch', function () {
     it('nfcalls - error', function () {
         return Promise.nfcall(function (cb) {
             cb(new Error('expected'));
-        }).then(function (nul) {
+        }).then(function () {
             throw new Error('Expected error');
         }, function (err) {
             expect(err.message).to.equal('expected');
@@ -110,7 +111,6 @@ describe('Goldfinch', function () {
                 });
             });
         });
-
 
     });
 

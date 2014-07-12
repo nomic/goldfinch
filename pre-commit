@@ -1,0 +1,6 @@
+#!/bin/bash
+
+echo ""
+echo "pre-commit hook: Linting..."
+echo ""
+jshint `git diff --name-only --cached | grep .js$`
