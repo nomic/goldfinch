@@ -66,10 +66,10 @@ describe('Goldfinch', function () {
 
         return obj.good(5).then(function(val) {
             expect(val).to.equal(6);
-        }, function(err) {
+        }, function() {
             throw new Error('Unexpected error');
         }).then(function() {
-            return obj.bad(5).then(function(val) {
+            return obj.bad(5).then(function() {
                 throw new Error('Expected error');
             }, function(err) {
                 expect(err.message).to.equal('oops');
@@ -110,6 +110,78 @@ describe('Goldfinch', function () {
 
                 });
             });
+        });
+    });
+
+    describe('#untilResolved', function () {
+
+        it('retries on thrown errors', function(done) {
+            var retries = 0;
+            Promise.untilResolved(function() {
+                if (retries === 1) return done();
+                retries += 1;
+                throw Error('error');
+            })();
+        });
+
+        it('retries on rejected promises', function(done) {
+            var retries = 0;
+            Promise.untilResolved(function() {
+                if (retries === 1) return done();
+                retries += 1;
+                return Promise.reject();
+            })();
+        });
+
+        it('calls report on retries', function() {
+            var retries = 0;
+            var reports = 0;
+            return Promise.untilResolved(function() {
+                if (retries === 1) return;
+                retries += 1;
+                return Promise.reject();
+            }, {
+                report : function(msg) {
+                    expect(msg).to.be.a('string');
+                    reports += 1;
+                }
+            })()
+            .then(function() {
+                expect(retries).to.equal(1);
+                expect(reports).to.equal(1);
+            });
+        });
+
+        it('gives up after timeout', function() {
+            var start = Date.now();
+            return Promise.untilResolved(function() {
+                return Promise.reject();
+            }, {
+                timeout: 50
+            })()
+            .then(function() {
+                expect(Date.now - start()).to.be.lt(100);
+            });
+        });
+
+        it('passes args through', function() {
+            return Promise.all([
+                Promise.untilResolved(function(a, b) {
+                    expect(a).to.equal('aVal');
+                    expect(b).to.equal('bVal');
+                })('aVal', 'bVal'),
+                // Conveniently, you can use it with spread or then:
+                Promise.resolve(['aVal', 'bVal'])
+                .spread( Promise.untilResolved(function(a, b) {
+                    expect(a).to.equal('aVal');
+                    expect(b).to.equal('bVal');
+                    return [a,b];
+                }))
+                .then( Promise.untilResolved(function(arr) {
+                    expect(arr).to.eql(['aVal', 'bVal']);
+                }))
+            ]);
+
         });
 
     });

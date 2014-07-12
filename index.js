@@ -1,5 +1,7 @@
-var Promise = require('bluebird/js/main/promise')();
-var _ = require('lodash');
+'use strict';
+
+var Promise = require('bluebird/js/main/promise')(),
+    _ = require('lodash');
 
 function getParams(fn) {
     var functionExp = /^function\s*[^\(]*\(\s*([^\)]*)\)/m;
@@ -44,7 +46,7 @@ Promise.promisifyValues = function Promise$_promisifyValues(obj) {
 
 
 Promise.ambidextrous = function(fn) {
-  
+
     // If the function takes a callback and is called without it
     // then we need to wrap it
     var params = getParams(fn);
@@ -55,8 +57,8 @@ Promise.ambidextrous = function(fn) {
         var args = Array.prototype.slice.call(arguments, 0);
 
         var doesTakeCallback = cb && (cb === 'callback' || cb === 'cb');
-        var isMissingArgument = argCount - 1 === args.length
-        
+        var isMissingArgument = argCount - 1 === args.length;
+
         // The function takes a callback, but one was not passed in
         if ( doesTakeCallback && isMissingArgument) {
             return Promise.promisify(fn).apply(null, args);
@@ -67,5 +69,30 @@ Promise.ambidextrous = function(fn) {
     };
 };
 
+Promise.untilResolved = function(fn, opts) {
+    opts =_.defaults(opts || {}, {
+        delay: 2,
+        timeout: 100000,
+        report: _.noop
+    });
+    return function() {
+        var args = arguments;
+        var boundFn = function() {
+            return fn.apply(null, args);
+        };
+        return _untilResolved(boundFn, opts.delay, opts.timeout, opts.report, 0);
+    };
+};
+
+function _untilResolved(fn, delay, timeout, report, elapsed) {
+    return Promise.try(fn)
+    .then(null, function(err) {
+        if (elapsed > timeout) throw err;
+        report('Retrying in ' + delay + ' ms');
+        return Promise.delay(delay).then(function() {
+            return _untilResolved(fn, delay * delay, timeout, report, delay + elapsed);
+        });
+    });
+}
 
 module.exports = Promise;
