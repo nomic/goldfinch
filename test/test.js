@@ -76,23 +76,23 @@ describe('Goldfinch', function () {
         });
 
     });
-    
+
     it('ambidextrousifies functions', function() {
-        
+
         function nodeFunction(a, b, c, callback) {
             callback(null, a + b +c);
         }
-        
+
         function nodeFunctionCb(a, b, cb) {
             cb(null, a + b);
         }
-        
+
         function regularFn(a, b, c) {
             return a + b + c;
         }
-        
+
         expect(Promise.ambidextrous(regularFn)('a', 'b', 'c')).to.equal('abc');
-        
+
         Promise.ambidextrous(nodeFunction)('a', 'b', 'c', function(err, abc) {
             expect(err).to.equal(null);
             expect(abc).to.equal('abc');
@@ -102,16 +102,16 @@ describe('Goldfinch', function () {
                 return Promise.ambidextrous(nodeFunctionCb)('a', 'b', function(err, abc) {
                     expect(err).to.equal(null);
                     expect(abc).to.equal('ab');
-                    
+
                     return Promise.ambidextrous(nodeFunctionCb)('a', 'b').then(function(abc) {
                         expect(abc).to.equal('ab');
                     });
-                
+
                 });
             });
         });
-        
-        
+
+
     });
 
 });
