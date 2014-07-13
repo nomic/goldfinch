@@ -155,12 +155,12 @@ describe('Goldfinch', function () {
         it('gives up after timeout', function() {
             var start = Date.now();
             return Promise.untilResolved(function() {
-                return Promise.reject();
+                return Promise.reject(new Error());
             }, {
                 timeout: 50
             })()
-            .then(function() {
-                expect(Date.now - start()).to.be.lt(100);
+            .then(null, function() {
+                expect(Date.now() - start).to.be.lt(100);
             });
         });
 

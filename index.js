@@ -90,7 +90,7 @@ function _untilResolved(fn, delay, timeout, report, elapsed) {
         if (elapsed > timeout) throw err;
         report('Retrying in ' + delay + ' ms');
         return Promise.delay(delay).then(function() {
-            return _untilResolved(fn, delay * delay, timeout, report, delay + elapsed);
+            return _untilResolved(fn, delay * 2, timeout, report, delay + elapsed);
         });
     });
 }
